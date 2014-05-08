@@ -24,7 +24,7 @@ class Image {
     {
         if ( ! $this->imagine)
         {
-            $this->library = Config::get('image.library', 'gd');
+            $this->library = Config::get('image::image.library', 'gd');
  
             // Now create the instance
             if     ($this->library == 'imagick') $this->imagine = new \Imagine\Imagick\Imagine();
@@ -42,7 +42,7 @@ class Image {
 	 * @param  boolean $crop
 	 * @return string
 	 */
-	public function resize($url, $width = 100, $height = null, $crop = false, $quality = 90)
+	public function resize($url, $width = 100, $height = null, $crop = false, $quality = 90, $folder = null)
 	{
 	    if ($url)
 	    {
@@ -53,13 +53,13 @@ class Image {
 	        if ( ! $height) $height = $width;
 	 
 	        // Quality
-	        $quality = Config::get('image::quality', $quality);
+	        $quality = Config::get('image::image.quality', $quality);
 	 
 	        // Directories and file names
 	        $fileName       = $info['basename'];
 	        $sourceDirPath  = public_path() . '/' . $info['dirname'];
 	        $sourceFilePath = $sourceDirPath . '/' . $fileName;
-	        $targetDirName  = $width . 'x' . $height . ($crop ? '_crop' : '');
+	        $targetDirName  = $folder;
 	        $targetDirPath  = $sourceDirPath . '/' . $targetDirName . '/';
 	        $targetFilePath = $targetDirPath . $fileName;
 	        $targetUrl      = asset($info['dirname'] . '/' . $targetDirName . '/' . $fileName);
@@ -109,22 +109,22 @@ class Image {
 	 * @param  File $file
 	 * @return string
 	 */
-	public function upload($file, $dir = null, $createDimensions = false)
+	public function upload($file, $dir = null, $createDimensions = false, $s3 = false)
 	{
 		if ($file)
 	    {
 	        // Generate random dir
 	        if ( ! $dir) $dir = str_random(8);
-	 			 		
-	        // Get file info and try to move
-	        $destination = Config::get('image::upload_path') . $dir;
+
+	        // Get file info and try to move	       
+	        $destination = Config::get('image::image.upload_path') . $dir;
 	        $filename    = time() . "_" . $file->getClientOriginalName();
-	        $path        = Config::get('image::upload_dir') . '/' . $dir . '/' . $filename;
+	        $path        = Config::get('image::image.upload_dir') . '/' . $dir . '/' . $filename;
 	        $uploaded    = $file->move($destination, $filename);
-	 
+	 		
 	        if ($uploaded)
 	        {
-	            if ($createDimensions) $this->createDimensions($path);
+	            if ($createDimensions) $this->createDimensions($file->getRealPath());
 	 
 	            return $path;
 	        }
@@ -140,20 +140,20 @@ class Image {
 	public function createDimensions($url, $dimensions = array())
 	{		
 	    // Get default dimensions
-	    $defaultDimensions = Config::get('image::dimensions');
+	    $defaultDimensions = Config::get('image::image.dimensions');
 
 	    if (is_array($defaultDimensions)) $dimensions = array_merge($defaultDimensions, $dimensions);
 	 
-	    foreach ($dimensions as $dimension)
+	    foreach ($dimensions as $folder => $dimension)
 	    {
-	        // Get dimmensions and quality
-	        $width   = (int) $dimension[0];
-	        $height  = isset($dimension[1]) ?  (int) $dimension[1] : $width;
-	        $crop    = isset($dimension[2]) ? (bool) $dimension[2] : false;
-	        $quality = isset($dimension[3]) ?  (int) $dimension[3] : Config::get('imag::quality');
+	       	// Get dimmensions and quality
+	        $width   = (int) $dimension["width"];
+	        $height  = isset($dimension["height"]) ?  (int) $dimension["height"] : $width;
+	        $crop    = isset($dimension["crop"]) ? (bool) $dimension["crop"] : false;
+	        $quality = isset($dimension["quality"]) ?  (int) $dimension["quality"] : Config::get('image::image.quality');
 	 
 	        // Run resizer
-	        $img = $this->resize($url, $width, $height, $crop, $quality);
+	        $img = $this->resize($url, $width, $height, $crop, $quality, $folder);
 	    }
 	}
 }
