@@ -1,0 +1,23 @@
+{
+    "name": "dirkcoetzer/image",
+    "description": "",
+    "authors": [
+        {
+            "name": "Dirk Coetzer",
+            "email": "dirk.coetzer@viamedia.co.za"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.0",
+        "illuminate/support": "4.1.*"
+    },
+    "autoload": {
+        "classmap": [
+            "src/migrations"
+        ],
+        "psr-0": {
+            "Dirkcoetzer\\Image\\": "src/"
+        }
+    },
+    "minimum-stability": "dev"
+}
