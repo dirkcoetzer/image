@@ -120,14 +120,24 @@ class Image {
 	        $destination = Config::get('image::image.upload_path') . $dir;
 	        $filename    = time() . "_" . $file->getClientOriginalName();
 	        $path        = Config::get('image::image.upload_dir') . '/' . $dir . '/' . $filename;
+	        
+	        $s3 = \AWS::get('s3');
+			$s3->putObject(array(
+			    'Bucket'     => Config::get('image::image.aws.bucket'),
+			    'Key'        => $dir . '/' . $filename,
+			    'SourceFile' => $file->getRealPath(),
+			));
+
 	        $uploaded    = $file->move($destination, $filename);
 	 		
 	        if ($uploaded)
 	        {
 	            if ($createDimensions) $this->createDimensions($file->getRealPath());
 	 
-	            return $path;
+	            return $filename;
 	        }
+
+	        return false;
 	    }
 	}
 

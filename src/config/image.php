@@ -1,10 +1,13 @@
 <?php 
 
 return array(
-    'library'     => 'imagick',
+    //'library'     => 'imagick',
     'upload_path' => public_path() . '/uploads/',
     'quality'     => 85,
- 
+ 	'aws'         => array(
+        'enable' => true,
+        'bucket' => 'bucketname'
+    ),
     'dimensions' => array(
         'thumb'  => array(
         	"width" => 100, 
@@ -19,4 +22,5 @@ return array(
         	"quality" => 90
         ),
     ),
+
 );
