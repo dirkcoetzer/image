@@ -114,13 +114,13 @@ class Image {
 		if ($file)
 	    {
 	        // Generate random dir
-	        if ( ! $dir) $dir = str_random(12);
-	 
+	        if ( ! $dir) $dir = str_random(8);
+	 			 		
 	        // Get file info and try to move
 	        $destination = Config::get('image::upload_path') . $dir;
-	        $filename    = $file->getClientOriginalName();
+	        $filename    = time() . "_" . $file->getClientOriginalName();
 	        $path        = Config::get('image::upload_dir') . '/' . $dir . '/' . $filename;
-	        $uploaded    = $file->move($destination, time() . '_' . $filename);
+	        $uploaded    = $file->move($destination, $filename);
 	 
 	        if ($uploaded)
 	        {
