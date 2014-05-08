@@ -4,7 +4,7 @@ return array(
     //'library'     => 'imagick',
     'upload_path' => public_path() . '/uploads/',
     'quality'     => 85,
- 	'aws'         => array(
+ 	's3'         => array(
         'enable' => true,
         'bucket' => 'bucketname'
     ),

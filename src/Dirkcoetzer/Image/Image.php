@@ -48,8 +48,8 @@ class Image {
 	    {
 	        // URL info
 	        $info = pathinfo($url);
-	 
-	        // The size
+	 		
+	 		// The size
 	        if ( ! $height) $height = $width;
 	 
 	        // Quality
@@ -63,7 +63,7 @@ class Image {
 	        $targetDirPath  = $sourceDirPath . '/' . $targetDirName . '/';
 	        $targetFilePath = $targetDirPath . $fileName;
 	        $targetUrl      = asset($info['dirname'] . '/' . $targetDirName . '/' . $fileName);
-	 
+	 	        	
 	        // Create directory if missing
 	        try
 	        {
@@ -87,7 +87,7 @@ class Image {
 	        {
 	            Log::error('[IMAGE SERVICE] Failed to resize image "' . $url . '" [' . $e->getMessage() . ']');
 	        }
-	 
+ 
 	        return $targetUrl;
 	    }
 	}
@@ -120,24 +120,16 @@ class Image {
 	        $destination = Config::get('image::image.upload_path') . $dir;
 	        $filename    = time() . "_" . $file->getClientOriginalName();
 	        $path        = Config::get('image::image.upload_dir') . '/' . $dir . '/' . $filename;
-	        
-	        $s3 = \AWS::get('s3');
-			$s3->putObject(array(
-			    'Bucket'     => Config::get('image::image.aws.bucket'),
-			    'Key'        => $dir . '/' . $filename,
-			    'SourceFile' => $file->getRealPath(),
-			));
-
-	        $uploaded    = $file->move($destination, $filename);
-	 		
-	        if ($uploaded)
+	         
+	        $uploaded = $file->move($destination, $filename);
+	 		if ($uploaded)
 	        {
-	            if ($createDimensions) $this->createDimensions($file->getRealPath());
+	            if ($createDimensions) $this->createDimensions($path);
 	 
-	            return $filename;
+	            return $path;
 	        }
 
-	        return false;
+	 		return false;
 	    }
 	}
 
@@ -154,7 +146,7 @@ class Image {
 
 	    if (is_array($defaultDimensions)) $dimensions = array_merge($defaultDimensions, $dimensions);
 	 
-	    foreach ($dimensions as $folder => $dimension)
+	    foreach ($dimensions as $size => $dimension)
 	    {
 	       	// Get dimmensions and quality
 	        $width   = (int) $dimension["width"];
@@ -163,7 +155,7 @@ class Image {
 	        $quality = isset($dimension["quality"]) ?  (int) $dimension["quality"] : Config::get('image::image.quality');
 	 
 	        // Run resizer
-	        $img = $this->resize($url, $width, $height, $crop, $quality, $folder);
+	        $img = $this->resize($url, $width, $height, $crop, $quality, $size);
 	    }
 	}
 }
