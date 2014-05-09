@@ -119,8 +119,7 @@ class Image {
 	        // Get file info and try to move	       
 	        $destination = Config::get('image::image.upload_path') . $dir;
 	        $filename    = time() . "_" . $file->getClientOriginalName();
-	        $path        = Config::get('image::image.upload_dir') . '/' . $dir . '/' . $filename;
-	        $url   		 = \URL::to($path);
+	        $url        = Config::get('image::image.upload_dir') . '/' . $dir . '/' . $filename;	        
 
 	        $uploaded = $file->move($destination, $filename);
 	 		if ($uploaded)
@@ -133,18 +132,35 @@ class Image {
 
 	            	foreach ($dimensions as $size => $dimension)	            		
 	    			{
-	    				$resizedUrl = $this->createDimensions($path, $size, $dimension);		            	
+	    				$resizedUrl = $this->createDimensions($url, $size, $dimension);		            	
 		            	
 		            	if (Config::get('image::image.s3'))
 		 					$resizedUrl = $this->push($resizedUrl, $dir . "/" . $size, $filename);
+
+		 				// Save the image to the database
+		 				$imageSize = new ImageSize(array(
+		 					'image_id' => $filename,
+		 					'url' => $resizedUrl,
+		 					'size' => $size
+		 				));
+		 				$imageSize->save();
 
 		            	$this->uploads[$size] = $resizedUrl;
 		            }
 	 			}
 
 	 			if (Config::get('image::image.s3'))
-	 				$url = $this->push($path, $dir, $filename);
+	 				$url = $this->push($url, $dir, $filename);
 
+	 			// Save the image to the database
+ 				$imageSize = new ImageSize(array(
+ 					'image_id' => $filename,
+ 					'url' => $url,
+ 					'size' => 'original'
+ 				));
+ 				$imageSize->save();
+
+	 			$this->uploads["id"] = $filename;
 	 			$this->uploads["original"] = $url; 
 
 	            return $this->uploads;
