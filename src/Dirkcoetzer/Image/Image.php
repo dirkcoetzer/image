@@ -124,6 +124,12 @@ class Image {
 	        $uploaded = $file->move($destination, $filename);
 	 		if ($uploaded)
 	        {	        	
+	        	// save the main image
+	        	$image = new Models\Image(array(
+	        		'id' => $filename,	        		
+	        	));
+	        	$image->save();
+
 	            if ($createDimensions) {
 	            	// Get default dimensions
 				    $dimensions = Config::get('image::image.dimensions');
@@ -138,8 +144,8 @@ class Image {
 		 					$resizedUrl = $this->push($resizedUrl, $dir . "/" . $size, $filename);
 
 		 				// Save the image to the database
-		 				$imageSize = new ImageSize(array(
-		 					'image_id' => $filename,
+		 				$imageSize = new Models\ImageSize(array(
+		 					'image_id' => $image->id,
 		 					'url' => $resizedUrl,
 		 					'size' => $size
 		 				));
@@ -153,14 +159,14 @@ class Image {
 	 				$url = $this->push($url, $dir, $filename);
 
 	 			// Save the image to the database
- 				$imageSize = new ImageSize(array(
- 					'image_id' => $filename,
+ 				$imageSize = new Models\ImageSize(array(
+ 					'image_id' => $image->id,
  					'url' => $url,
  					'size' => 'original'
  				));
  				$imageSize->save();
 
-	 			$this->uploads["id"] = $filename;
+	 			$this->uploads["id"] = $image->id;
 	 			$this->uploads["original"] = $url; 
 
 	            return $this->uploads;

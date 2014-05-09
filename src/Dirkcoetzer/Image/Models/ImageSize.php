@@ -1,4 +1,4 @@
-<?php namespace Dirkcoetzer\Image;
+<?php namespace Dirkcoetzer\Image\Models;
 
 class ImageSize extends \Eloquent{
 
