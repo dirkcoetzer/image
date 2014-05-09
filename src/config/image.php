@@ -1,13 +1,11 @@
 <?php 
 
 return array(
-    //'library'     => 'imagick',
+    'library'     => 'imagick',
+    'upload_dir'  => 'uploads',
     'upload_path' => public_path() . '/uploads/',
     'quality'     => 85,
- 	's3'         => array(
-        'push' => true,
-        'bucket' => 'bucketname'
-    ),
+ 	's3'         => false,
     'dimensions' => array(
         'thumb'  => array(
         	"width" => 100, 

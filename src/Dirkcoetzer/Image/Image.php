@@ -42,13 +42,13 @@ class Image {
 	 * @param  boolean $crop
 	 * @return string
 	 */
-	public function resize($url, $width = 100, $height = null, $crop = false, $quality = 90, $folder = null)
+	public function resize($url, $width = 100, $height = null, $crop = false, $quality = 90, $subDirectory)
 	{
 	    if ($url)
 	    {
 	        // URL info
-	        $info = pathinfo($url);
-	 		
+	        $info = pathinfo($url);		        
+
 	 		// The size
 	        if ( ! $height) $height = $width;
 	 
@@ -59,11 +59,11 @@ class Image {
 	        $fileName       = $info['basename'];
 	        $sourceDirPath  = public_path() . '/' . $info['dirname'];
 	        $sourceFilePath = $sourceDirPath . '/' . $fileName;
-	        $targetDirName  = $folder;
+	        $targetDirName  = $subDirectory;
 	        $targetDirPath  = $sourceDirPath . '/' . $targetDirName . '/';
 	        $targetFilePath = $targetDirPath . $fileName;
-	        $targetUrl      = asset($info['dirname'] . '/' . $targetDirName . '/' . $fileName);
-	 	        	
+	        $targetUrl      = $info['dirname'] . '/' . $targetDirName . '/' . $fileName;
+
 	        // Create directory if missing
 	        try
 	        {
@@ -80,7 +80,7 @@ class Image {
 	            {
 	                $this->imagine->open($sourceFilePath)
 	                              ->thumbnail($size, $mode)
-	                              ->save($targetFilePath, array('quality' => $quality));
+	                              ->save($targetFilePath, array('quality' => $quality));	                
 	            }
 	        }
 	        catch (\Exception $e)
@@ -109,7 +109,7 @@ class Image {
 	 * @param  File $file
 	 * @return string
 	 */
-	public function upload($file, $dir = null, $createDimensions = false, $s3 = false)
+	public function upload($file, $dir = null, $createDimensions = false, $customDimensions = array())
 	{
 		if ($file)
 	    {
@@ -120,26 +120,59 @@ class Image {
 	        $destination = Config::get('image::image.upload_path') . $dir;
 	        $filename    = time() . "_" . $file->getClientOriginalName();
 	        $path        = Config::get('image::image.upload_dir') . '/' . $dir . '/' . $filename;
-	         
+	        $url   		 = \URL::to($path);
+
 	        $uploaded = $file->move($destination, $filename);
 	 		if ($uploaded)
 	        {	        	
-	            if ($createDimensions) $this->createDimensions($path);
-	 			
-	 			if (Config::get('image::image.s3.push')){
-	        		$s3 = AWS::get('s3');
-					$s3->putObject(array(
-					    'Bucket'     => Config::get('image::image.s3.bucket'),
-					    'Key'        => $filename,
-					    'SourceFile' => $path,
-					));
-	        	}
-	        	
-	            return $path;
+	            if ($createDimensions) {
+	            	// Get default dimensions
+				    $dimensions = Config::get('image::image.dimensions');
+
+				    if (is_array($dimensions)) $dimensions = array_merge($dimensions, $customDimensions);
+
+	            	foreach ($dimensions as $size => $dimension)	            		
+	    			{
+	    				$resizedUrl = $this->createDimensions($path, $size, $dimension);		            	
+		            	
+		            	if (Config::get('image::image.s3'))
+		 					$resizedUrl = $this->push($resizedUrl, $dir . "/" . $size, $filename);
+
+		            	$this->uploads[$size] = $resizedUrl;
+		            }
+	 			}
+
+	 			if (Config::get('image::image.s3'))
+	 				$url = $this->push($path, $dir, $filename);
+
+	 			$this->uploads["original"] = $url; 
+
+	            return $this->uploads;
 	        }
 
 	 		return false;
 	    }
+	}
+
+	/**
+	* Push 
+	* Pushes a file to S3
+	*
+	* @param string path
+	* @param string filename
+	*
+	* @return url
+	*/
+	public function push($path, $dir, $filename){
+		$s3 = \AWS::get('s3');
+		$response = $s3->putObject(array(
+		    'Bucket'     => Config::get('image::image.upload_dir'),
+		    'Key'        => $dir . "/" . $filename,
+		    'SourceFile' => $path,
+		    'ACL'    	 => 'public-read',
+		));
+
+		return $response['ObjectURL'];
 	}
 
 	/**
@@ -148,23 +181,15 @@ class Image {
 	 * @param  array  $dimensions
 	 * @return void
 	 */
-	public function createDimensions($url, $dimensions = array())
+	public function createDimensions($url, $size, $dimension)
 	{		
-	    // Get default dimensions
-	    $defaultDimensions = Config::get('image::image.dimensions');
-
-	    if (is_array($defaultDimensions)) $dimensions = array_merge($defaultDimensions, $dimensions);
-	 
-	    foreach ($dimensions as $size => $dimension)
-	    {
-	       	// Get dimmensions and quality
-	        $width   = (int) $dimension["width"];
-	        $height  = isset($dimension["height"]) ?  (int) $dimension["height"] : $width;
-	        $crop    = isset($dimension["crop"]) ? (bool) $dimension["crop"] : false;
-	        $quality = isset($dimension["quality"]) ?  (int) $dimension["quality"] : Config::get('image::image.quality');
-	 
-	        // Run resizer
-	        $img = $this->resize($url, $width, $height, $crop, $quality, $size);
-	    }
+	    // Get dimmensions and quality
+        $width   = (int) $dimension["width"];
+        $height  = isset($dimension["height"]) ?  (int) $dimension["height"] : $width;
+        $crop    = isset($dimension["crop"]) ? (bool) $dimension["crop"] : false;
+        $quality = isset($dimension["quality"]) ?  (int) $dimension["quality"] : Config::get('image::image.quality');
+ 
+        // Run resizer
+        return $resizedUrl = $this->resize($url, $width, $height, $crop, $quality, $size);
 	}
 }
