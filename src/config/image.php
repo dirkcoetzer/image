@@ -5,7 +5,7 @@ return array(
     'upload_path' => public_path() . '/uploads/',
     'quality'     => 85,
  	's3'         => array(
-        'enable' => true,
+        'push' => true,
         'bucket' => 'bucketname'
     ),
     'dimensions' => array(

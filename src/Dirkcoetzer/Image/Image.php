@@ -123,9 +123,18 @@ class Image {
 	         
 	        $uploaded = $file->move($destination, $filename);
 	 		if ($uploaded)
-	        {
+	        {	        	
 	            if ($createDimensions) $this->createDimensions($path);
-	 
+	 			
+	 			if (Config::get('image::image.s3.push')){
+	        		$s3 = AWS::get('s3');
+					$s3->putObject(array(
+					    'Bucket'     => Config::get('image::image.s3.bucket'),
+					    'Key'        => $filename,
+					    'SourceFile' => $path,
+					));
+	        	}
+	        	
 	            return $path;
 	        }
 
