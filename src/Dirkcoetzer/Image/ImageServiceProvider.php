@@ -19,6 +19,8 @@ class ImageServiceProvider extends ServiceProvider {
 	public function boot()
 	{
 		$this->package('dirkcoetzer/image');
+
+		include __DIR__.'/../../routes.php';
 	}
 
 	/**
