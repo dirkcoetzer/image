@@ -14,7 +14,7 @@ class Image extends \Eloquent{
 	 *
 	 * @var string
 	 */
-	protected $table = 'images';
+	protected $table = 'tbl_images';
 
 	/**
 	 * The attributes that are mass assignable.

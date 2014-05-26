@@ -14,7 +14,7 @@ class ImageSize extends \Eloquent{
 	 *
 	 * @var string
 	 */
-	protected $table = 'image_sizes';
+	protected $table = 'tbl_image_sizes';
 
 	/**
 	 * The attributes that are mass assignable.
