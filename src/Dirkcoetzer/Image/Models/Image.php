@@ -1,5 +1,7 @@
 <?php namespace Dirkcoetzer\Image\Models;
 
+use Config;
+
 class Image extends \Eloquent{
 
 	/**
@@ -14,7 +16,7 @@ class Image extends \Eloquent{
 	 *
 	 * @var string
 	 */
-	protected $table = 'tbl_images';
+	protected $table = "images";
 
 	/**
 	 * The attributes that are mass assignable.
