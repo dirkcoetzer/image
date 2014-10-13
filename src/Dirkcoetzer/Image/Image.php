@@ -128,7 +128,7 @@ class Image {
 	        {	        	
 	        	// save the main image
 	        	DB::table($this->getImageTableName())->insert(array(
-	        		"id" = $filename
+	        		"id" => $filename
 	        	));
 	        	
 	            if ($createDimensions) {
