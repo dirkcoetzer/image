@@ -127,7 +127,7 @@ class Image {
 	 		if ($uploaded)
 	        {	        	
 	        	// save the main image
-	        	DB::table($this->getImageTableName())->insert(array(
+	        	DB::table($this->getImagesTableName())->insert(array(
 	        		"id" => $filename
 	        	));
 	        	
