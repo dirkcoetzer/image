@@ -165,7 +165,7 @@ class Image {
  					'size' => 'original'
 	        	));
 
- 				$this->uploads["id"] = $image->id;
+ 				$this->uploads["id"] = $filename;
 	 			$this->uploads["original"] = $url; 
 
 	            return $this->uploads;
