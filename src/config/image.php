@@ -20,5 +20,8 @@ return array(
         	"quality" => 90
         ),
     ),
-
+    'tables' => array(
+        'images' => 'tbl_images',
+        'image_sizes' => 'tbl_image_sizes'
+    )
 );

@@ -111,6 +111,8 @@ class Image {
 	 */
 	public function upload($file, $dir = null, $createDimensions = false, $customDimensions = array())
 	{
+		Log::debug(__METHOD__);
+
 		if ($file)
 	    {
 	        // Generate random dir
@@ -125,11 +127,10 @@ class Image {
 	 		if ($uploaded)
 	        {	        	
 	        	// save the main image
-	        	$image = new Models\Image(array(
-	        		'id' => $filename,	        		
+	        	DB::table($this->getImageTableName())->insert(array(
+	        		"id" = $filename
 	        	));
-	        	$image->save();
-
+	        	
 	            if ($createDimensions) {
 	            	// Get default dimensions
 				    $dimensions = Config::get('image::image.dimensions');
@@ -144,12 +145,11 @@ class Image {
 		 					$resizedUrl = $this->push($resizedUrl, $dir . "/" . $size, $filename);
 
 		 				// Save the image to the database
-		 				$imageSize = new Models\ImageSize(array(
+		 				DB::table($this->getImageSizesTableName())->insert(array(
 		 					'image_id' => $image->id,
 		 					'url' => $resizedUrl,
 		 					'size' => $size
-		 				));
-		 				$imageSize->save();
+			        	));
 
 		            	$this->uploads[$size] = $resizedUrl;
 		            }
@@ -159,14 +159,13 @@ class Image {
 	 				$url = $this->push($url, $dir, $filename);
 
 	 			// Save the image to the database
- 				$imageSize = new Models\ImageSize(array(
+	 			DB::table($this->getImageSizesTableName())->insert(array(
  					'image_id' => $image->id,
  					'url' => $url,
  					'size' => 'original'
- 				));
- 				$imageSize->save();
+	        	));
 
-	 			$this->uploads["id"] = $image->id;
+ 				$this->uploads["id"] = $image->id;
 	 			$this->uploads["original"] = $url; 
 
 	            return $this->uploads;
@@ -213,5 +212,15 @@ class Image {
  
         // Run resizer
         return $resizedUrl = $this->resize($url, $width, $height, $crop, $quality, $size);
+	}
+
+	public function getImagesTableName(){
+		\Log::debug(__METHOD__);
+
+		return Config::get('image::image.tables.images', 'tbl_images');
+	}
+
+	public function getImageSizesTableName(){
+		return Config::get('image::image.tables.image_sizes', 'tbl_image_sizes');
 	}
 }
