@@ -1,6 +1,6 @@
 <?php namespace Dirkcoetzer\Image;
 
-use Config, Log, File;
+use Config, Log, File, DB;
 
 class Image {
 	
