@@ -146,7 +146,7 @@ class Image {
 
 		 				// Save the image to the database
 		 				DB::table($this->getImageSizesTableName())->insert(array(
-		 					'image_id' => $image->id,
+		 					'image_id' => $filename,
 		 					'url' => $resizedUrl,
 		 					'size' => $size
 			        	));
@@ -160,7 +160,7 @@ class Image {
 
 	 			// Save the image to the database
 	 			DB::table($this->getImageSizesTableName())->insert(array(
- 					'image_id' => $image->id,
+ 					'image_id' => $filename,
  					'url' => $url,
  					'size' => 'original'
 	        	));
