@@ -125,11 +125,16 @@ class Image {
 
 	        $uploaded = $file->move($destination, $filename);
 	 		if ($uploaded)
-	        {	        	
+	        {	    
+	        	$imgData = array(
+		        		"id" => $filename
+		        	);
+
 	        	// save the main image
-	        	DB::table($this->getImagesTableName())->insert(array(
-	        		"id" => $filename
-	        	));
+	        	if (Config::get('image::image.db_store')){
+	        		DB::table($this->getImagesTableName())->insert($imgData);
+        		}
+	        	
 	        	
 	            if ($createDimensions) {
 	            	// Get default dimensions
@@ -145,12 +150,19 @@ class Image {
 		 					$resizedUrl = $this->push($resizedUrl, $dir . "/" . $size, $filename);
 
 		 				// Save the image to the database
-		 				DB::table($this->getImageSizesTableName())->insert(array(
-		 					'image_id' => $filename,
-		 					'url' => $resizedUrl,
-		 					'size' => $size
-			        	));
+		 				$imgSizesData = array(
+			 					'image_id' => $filename,
+			 					'url' => $resizedUrl,
+			 					'size' => $size
+				        	);
 
+		 				if (Config::get('image::image.db_store')){
+			        		DB::table($this->getImageSizesTableName())->insert(array(
+			 					'image_id' => $filename,
+			 					'url' => $resizedUrl,
+			 					'size' => $size
+				        	));
+			 			}
 		            	$this->uploads[$size] = $resizedUrl;
 		            }
 	 			}
@@ -159,11 +171,15 @@ class Image {
 	 				$url = $this->push($url, $dir, $filename);
 
 	 			// Save the image to the database
-	 			DB::table($this->getImageSizesTableName())->insert(array(
- 					'image_id' => $filename,
- 					'url' => $url,
- 					'size' => 'original'
-	        	));
+	 			$imgSizesData = array(
+	 					'image_id' => $filename,
+	 					'url' => $url,
+	 					'size' => 'original'
+		        	);
+
+	 			if (Config::get('image::image.db_store')){
+	        		DB::table($this->getImageSizesTableName())->insert($imgSizesData);
+		 		}
 
  				$this->uploads["id"] = $filename;
 	 			$this->uploads["original"] = $url; 
